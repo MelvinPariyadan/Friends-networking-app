@@ -19,7 +19,7 @@ import openai
 import secret
 
 
-class Tinder:
+class FindFriends:
     def __init__(self):
 
         self.conn = sqlite3.connect("final_test.db")
@@ -28,6 +28,7 @@ class Tinder:
                         # but no need to in this case
         self.runApp()
 
+    # Creates Each required Tables
     def runDb(self):
         self.c.execute("""CREATE TABLE users(
                     id text,
@@ -86,15 +87,18 @@ class Tinder:
 
         self.conn.commit()
 
+
+    #Creates root
     def runApp(self):
         root = tk.Tk()
-        root.title("Tinder")
+        root.title("Friends")
         root.geometry("300x500+550+150")
         root.resizable(False, False)
         self.signup_screen(root)
 
         root.mainloop()
 
+    #Creates Registration Screen
     def signup_screen(self, root):
         login_screen = tk.Frame(root)
         login_screen.pack()
@@ -138,6 +142,7 @@ class Tinder:
                 break
 
         if my_boolean:
+            #Create user_id if new user
             user_id = str(uuid.uuid4())
 
             self.c.execute("INSERT INTO users VALUES (:id,:email,:password)",
@@ -166,8 +171,9 @@ class Tinder:
 
         # Go to profile settings -> From there to Login screen
 
+    #Creating User Profile
     def profile_check(self, state, name_entry, age_entry, var, about_box, profile, root, user_id, ):
-
+        #You cannot continue unless you write name,age,etc..
         if name_entry.get() == "" or age_entry.get() == "" or var.get() == 0 or about_box.get("1.0", "end") == "\n":
             if name_entry.get() == "":
                 name_entry.configure(bg="#F9A8A7")
@@ -177,8 +183,6 @@ class Tinder:
                 about_box.configure(bg="#F9A8A7")
 
         else:
-            # print(name_entry.get(), "<-")
-            # print(name_entry.get())
             name = name_entry.get()
             age = age_entry.get()
             male_or_female = var.get()
@@ -188,28 +192,15 @@ class Tinder:
             profile_page_2 = tk.Frame(root)
             profile_page_2.pack()
 
+
+            # Go to profile page 2
             interests = tk.Label(profile_page_2, text="Interests", font="bold")
             interests.pack()
 
             def get_box():
                 pass
 
-                # interest1_var.get()
-                # interest2_var.get()
-                # interest3_var.get()
-                # interest4_var.get()
-                # interest5_var.get()
-                # interest6_var.get()
-                # interest7_var.get()
-                # interest8_var.get()
-                # interest9_var.get()
-                # interest10_var.get()
-                # interest11_var.get()
-                # interest12_var.get()
-                # interest13_var.get()
-                # interest14_var.get()
-                # interest15_var.get()
-
+            #Create 15 ttk.Checkbuttons
             interest1_var = tk.StringVar()
             interest1 = ttk.Checkbutton(profile_page_2,
                                         text='Reading',
@@ -384,6 +375,7 @@ class Tinder:
 
             warning = tk.Label(profile_page_2, text="(0/5) hobbies selected")
 
+            # If state is login, when profile page 2 gets called, the buttons that were selected in previous session will stil appear selected
             if state == "login":
                 self.c.execute("SELECT * FROM interests WHERE id =(:userid)", {'userid': user_id})
                 interests_tuple = self.c.fetchone()
@@ -393,6 +385,7 @@ class Tinder:
                     if interests_tuple[i] == 1:
                         interest_obj[i].invoke()
 
+            # I prefer partial instead of command = lambda : .
             args_of_submit = partial(self.prep_main, state, root, profile_page_2, warning, name, age, male_or_female,
                                      about_me,
                                      user_id, interest1_var, interest2_var, interest3_var,
@@ -403,6 +396,7 @@ class Tinder:
             submit.pack()
             warning.pack()
 
+    #Preparing for entering main screen.
     def prep_main(self, state, root, profile, warning, name, age, male_or_female, about_me, user_id, *interests):
         global geodata
         if geodata:
@@ -438,15 +432,14 @@ class Tinder:
                 interests[i] = 1
         # print(interests, "##################")
         count = interests.count(1)
-        # print(len({'read': interests[0], 'music': interests[1], 'memes': interests[2], 'shopping': interests[3],
-        #                         'movies': interests[4], 'workingOut':interests[5], 'coffee': interests[6], 'sports':interests[7],
-        #                         'environment': interests[8], 'meditation':interests[9],'photography': interests[10], 'nightlife':interests[11],
-        #                         'anime': interests[12], 'socialMedia':interests[13],'esports': interests[14],'id': user_id}))
+
 
         if count < 5:
             warning.configure(text=f"({count}/5) hobbies selected", fg="red")
         else:
             if state == "signup":
+                # If signup insert profile settings into relevant tables
+
                 self.c.execute("INSERT INTO user VALUES (:id,:name,:age,:gender,:image,:about,:geodata)",
                                {'id': user_id, 'name': name, 'age': int(age), 'gender': male_or_female,
                                 'image': filename,
@@ -493,9 +486,11 @@ class Tinder:
             self.main_screen(state, root, user_id)
 
     def profile_settings_screen(self, root, user_id, state):
+        #Create profile settings screen
         profile = tk.Frame(root)
         profile.pack()
         row = None
+
         if state == "login":
             # print("login", user_id)
             self.c.execute("SELECT * FROM user WHERE id =(:userid)", {'userid': user_id})
@@ -573,6 +568,7 @@ class Tinder:
         about.pack()
         about_box.pack()
 
+        # fetchone can return none.
         if row:
             name_entry.insert(0, row[1])
             age_entry.insert(0, row[2])
@@ -593,6 +589,7 @@ class Tinder:
         # Submit only if all the data are provided.
 
     def authentification(self, email, password):
+        #If email and password match return id
         self.c.execute("SELECT id,email,password from users")
         list_of_tuples = self.c.fetchall()
         for user_id, k, v in list_of_tuples:
@@ -618,8 +615,9 @@ class Tinder:
         # Go to main_screen
 
     def main_screen(self, state, root, user_id):
+        #EXPLANATION of Friends.py
 
-        # Create unseen table, ,Potential friends,Friends [DONE]
+        # Create unseen table, ,Potential friends,Friends
 
         # Signup
         # Unseen full,Seen empty, [DONE]
@@ -1065,4 +1063,4 @@ class Tinder:
 
 
 
-app = Tinder()
+app = FindFriends()
