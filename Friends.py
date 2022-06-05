@@ -22,9 +22,10 @@ import secret
 class Tinder:
     def __init__(self):
 
-        self.conn = sqlite3.connect("test_phase5.db")
+        self.conn = sqlite3.connect("final_test.db")
         self.c = self.conn.cursor()
-        # self.runDb()
+        # self.runDb() #This Line needs to be uncommented to create another database. After closing code uncomment to run again
+                        # but no need to in this case
         self.runApp()
 
     def runDb(self):
