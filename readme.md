@@ -21,6 +21,5 @@ As for networking as per my proposal I have done API calls.
 To make a ChatBot (json data) and to get random geographic Coordinates
 (xml data).
 
-secret.py has my api key in it. Please do not share it with others.
-Once i get my grade back. I will get a new key. 
+
 
